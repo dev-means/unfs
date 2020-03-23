@@ -17,7 +17,7 @@ type unFs struct {
 	Server string
 }
 
-func NewUnFS(server, id, key string) unFs {
+func New(server, id, key string) unFs {
 	client, err := minio.New(server, id, key, false)
 	if err != nil {
 		panic(err)
@@ -58,10 +58,15 @@ func SaveMinIO(fs unFs, data *[]byte) (res string) {
 	}
 	filename := fmt.Sprintf("%s.%s", uuId(), spl[1])
 	bucket := ""
-	if strings.HasPrefix(cType, "image/") {
-		bucket = "images"
-	} else {
+	switch {
+	default:
 		bucket = spl[1]
+	case strings.HasPrefix(cType, "image/"):
+		bucket = "images"
+	case strings.HasPrefix(cType, "video/"):
+		bucket = "videos"
+	case strings.HasPrefix(cType, "audio/"):
+		bucket = "audios"
 	}
 	fs.Bucket = bucket
 	if e := fs.PutObject(filename, *data, cType); e != nil {
